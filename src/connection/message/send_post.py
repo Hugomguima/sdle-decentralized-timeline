@@ -13,6 +13,7 @@ class SendPostType(MessageInterface):
         msg = {
             'header': {
                 'type': MessageType.SEND_POSTS.value,
+                'username': self.user.username,
             },
             'content' : timeline
         }

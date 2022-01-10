@@ -74,13 +74,20 @@ class User:
     def update_timeline(self, message):
         self.timeline.add_message(message)
 
-    def many_update_timeline(self, messages):                
-        ### Delete all previous messages we had from that user from the timeline
-        if messages['content']:
-            followed_user = messages['content'][0]['header']['user'] # TODO: verify key signature
-            self.timeline.delete_posts(followed_user)
-
+    def many_update_timeline(self, messages):
+        valid_messages = []
+        sender_username = messages['header']['username']
+        
+        ### Verify if all messages are from the sender user
         for message in messages['content']:
+            if sender_username == message['header']['user']:
+                valid_messages.append(message)
+
+        ### Delete all previous messages we had from that user from the timeline
+        self.timeline.delete_posts(sender_username) # TODO: verify key signature
+
+        ### Add the received messages to our timeline
+        for message in valid_messages:
             self.timeline.add_message(message)
 
     def send_message(self, message):

@@ -42,4 +42,3 @@ class MessageReceiver:
 
             # Parsing in a new thread?
             self.listener_action(msg['header']['type'], msg) 
-    
