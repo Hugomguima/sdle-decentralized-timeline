@@ -1,3 +1,4 @@
+import os
 import asyncio
 
 from .message import MessageType, MessageInterface
@@ -9,13 +10,17 @@ class RequestPostType(MessageInterface):
     def build(self, followed_user):
         username = self.user.username
         followed_info = self.user.get_user(followed_user)
+        random_check = str(os.urandom(32))
+        signature = self.user.sign(random_check)
 
         msg = {
             'header': {
                 'user': username,
-                'followed' : followed_user,
+                'signature': signature,
+                'followed': followed_user,
                 'type': MessageType.REQUEST_POSTS.value
             },
+            'content': random_check,
         }
 
         return (followed_info, msg)

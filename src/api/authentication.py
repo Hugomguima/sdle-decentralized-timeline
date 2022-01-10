@@ -1,6 +1,9 @@
+from Crypto.PublicKey import RSA
 import json
 import os
 import hashlib
+
+
 class Authentication:
     def __init__(self, node):
         self.node = node
@@ -19,13 +22,22 @@ class Authentication:
         try:
             user_info = self.node.get(username)
             
-            salt = os.urandom(32) # A new salt for this user
-            print(salt)
-            key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
             if user_info is None:
+                salt = os.urandom(32)
+                key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+                RSA_key = RSA.generate(bits=1024)
+                
+                if not os.path.exists('./key'):
+                    os.makedirs('./key')
+
+                with open(f'./key/{username}.key', 'w') as storage_key:
+                    storage_key.write(f"{RSA_key.n}\n{RSA_key.d}")
+
                 user_data = {
                     'salt': salt.hex(),
                     'hash_password': key.hex(),
+                    'public_key_n': RSA_key.n,
+                    'public_key_e': RSA_key.e,
                     "followers": [],
                     "following": [],
                     "ip": self.node.ip,

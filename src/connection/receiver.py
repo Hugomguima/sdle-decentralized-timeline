@@ -26,7 +26,8 @@ class MessageReceiver:
     # -- Listener Loop Action --
     # --------------------------
     def listener_action(self, action, message):
-        self.listener_action_list[action](message)
+        if self.user.verify_signature(message['content'], message['header']['user'], message['header']['signature']):
+            self.listener_action_list[action](message)
 
     # --------------------------
     # -- Listener Loop 
