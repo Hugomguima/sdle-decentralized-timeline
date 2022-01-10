@@ -38,9 +38,6 @@ class User:
 
         # Timeline Module
         self.timeline = Timeline(username)
-        # TODO: Update timeline with posts from when the user node was offline
-        # ZMQ already restores these posts O.O
-        # self.update_state()
 
     # --------------------------
     #  Action Menu Command
@@ -77,7 +74,12 @@ class User:
     def update_timeline(self, message):
         self.timeline.add_message(message)
 
-    def many_update_timeline(self, messages):
+    def many_update_timeline(self, messages):                
+        ### Delete all previous messages we had from that user from the timeline
+        if messages['content']:
+            followed_user = messages['content'][0]['header']['user'] # TODO: verify key signature
+            self.timeline.delete_posts(followed_user)
+
         for message in messages['content']:
             self.timeline.add_message(message)
 
@@ -94,8 +96,11 @@ class User:
         self.timeline.delete_posts(user_unfollowed)
 
     def update_state(self):
+        user_info = self.get_user(self.username)
+        self.followers = user_info['followers']
+        self.following = user_info['following']
+
         for followed_user in self.following:
-            self.timeline.delete_posts(followed_user)
             self.message_dispatcher.action(MessageType.REQUEST_POSTS, followed_user)
 
     # -------------
