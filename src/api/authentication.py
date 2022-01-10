@@ -1,5 +1,6 @@
 import json
-
+import os
+import hashlib
 class Authentication:
     def __init__(self, node):
         self.node = node
@@ -17,13 +18,18 @@ class Authentication:
         
         try:
             user_info = self.node.get(username)
+            
+            salt = os.urandom(32) # A new salt for this user
+            print(salt)
+            key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
             if user_info is None:
                 user_data = {
-                    "password": password,
+                    'salt': salt.hex(),
+                    'hash_password': key.hex(),
                     "followers": [],
                     "following": [],
                     "ip": self.node.ip,
-                    "port": self.node.port
+                    "port": self.node.port,
                 }
 
                 self.node.set(username, json.dumps(user_data))
@@ -45,8 +51,11 @@ class Authentication:
 
             if user_info is not None:
                 user_info = json.loads(user_info)
+                salt = bytes.fromhex(user_info['salt'])
+                key = bytes.fromhex(user_info['hash_password'])
+                new_key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
 
-                if password != user_info['password']:
+                if key != new_key:
                     raise Exception(f"Login failed. Password is wrong!")
                 
                 user_args = (self.node, username, user_info)

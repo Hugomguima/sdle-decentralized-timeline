@@ -9,7 +9,8 @@ class User:
     def __init__(self, node, username, data):
         self.node = node
         self.username = username
-        self.password = data['password']
+        self.hash_password = data['hash_password']
+        self.salt = data['salt']
         self.ip = data['ip']
         self.port = data['port']
         self.followers = data['followers']
@@ -177,7 +178,7 @@ class User:
     # -----------
     def __str__(self) -> str:
         res = f'User {self.username}:\n'
-        res += f'\tPassword: {self.password}\n'
+        res += f'\tKey: {self.hash_password}\n'
         res += f'\tFollowers:\n'
         for username in self.followers:
             res += f'\t\t> {username}'
