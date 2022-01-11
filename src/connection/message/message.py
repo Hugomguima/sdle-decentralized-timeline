@@ -19,7 +19,7 @@ class MessageInterface(abc.ABC):
     def __init__(self, user, sender):
         self.user = user
         self.sender = sender
-    
+
     @abc.abstractclassmethod
     def build(self, info):
         pass

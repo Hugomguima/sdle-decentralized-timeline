@@ -1,4 +1,5 @@
 import json
+from hashlib import sha512
 
 from .timeline import Timeline
 
@@ -9,7 +10,8 @@ class User:
     def __init__(self, node, username, data):
         self.node = node
         self.username = username
-        self.password = data['password']
+        self.hash_password = data['hash_password']
+        self.salt = data['salt']
         self.ip = data['ip']
         self.port = data['port']
         self.followers = data['followers']
@@ -18,9 +20,13 @@ class User:
         self.listening_ip = data['ip']
         self.listening_port = data['port'] - 1000
 
+        self.public_key_n = data['public_key_n']
+        self.public_key_e = data['public_key_e']
+
+        self.__read_private_keys()
+
         # Follower Module
         # TODO FOLLOWER
-
         # Send Messages Module
         self.message_dispatcher = MessageDispatcher(self)
 
@@ -38,6 +44,29 @@ class User:
 
         # Timeline Module
         self.timeline = Timeline(username)
+
+    # ------------
+    # Signature
+    # ------------
+    def __read_private_keys(self):
+        with open(f'./key/{self.username}.key', 'r') as storage_key:
+            self.__private_key_n = str(storage_key.readline())
+            self.__private_key_d =  str(storage_key.readline())
+
+    def sign(self, message):
+        hash = int.from_bytes(sha512(str(message).encode('utf-8')).digest(), byteorder='big')
+        signature = pow(hash, int(self.__private_key_d), int(self.__private_key_n))
+        return signature
+
+    def verify_signature(self, message, user, signature):
+        user_original = self.get_user(user)
+
+        hash = int.from_bytes(sha512(str(message).encode('utf-8')).digest(), byteorder='big')
+        hashFromSignature = pow(signature, int(user_original['public_key_e']), int(user_original['public_key_n']))
+
+        signature_valid = (hash == hashFromSignature)
+        print("Signature valid:", signature_valid)
+        return signature_valid
 
     # --------------------------
     #  Action Menu Command
@@ -189,7 +218,7 @@ class User:
     # -----------
     def __str__(self) -> str:
         res = f'User {self.username}:\n'
-        res += f'\tPassword: {self.password}\n'
+        res += f'\tKey: {self.hash_password}\n'
         res += f'\tFollowers:\n'
         for username in self.followers:
             res += f'\t\t> {username}'
