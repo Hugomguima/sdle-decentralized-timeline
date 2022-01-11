@@ -76,7 +76,7 @@ class User:
 
     def many_update_timeline(self, messages):
         valid_messages = []
-        sender_username = messages['header']['username']
+        sender_username = messages['header']['user']
         
         ### Verify if all messages are from the sender user
         for message in messages['content']:
