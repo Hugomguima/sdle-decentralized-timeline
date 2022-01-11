@@ -6,9 +6,9 @@ from src.server import KademliaNode
 
 class Core:
     def __init__(self, ip, port, initial):
-        if initial: 
+        if initial:
             self.node = KademliaNode(ip, port)
-        else: 
+        else:
             self.node = KademliaNode(ip, port, ("127.0.0.1", 8000))
 
         self.user = None
@@ -26,6 +26,9 @@ class Core:
 
         answers = AuthMenu.menu()
         self.user = User(*self.authentication.action(answers['method'], answers['information']))
+        
+        if answers['method'] == 'login':
+            self.user.update_state()
 
         while True:
             answers = MainMenu().menu()

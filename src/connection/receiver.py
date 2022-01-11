@@ -13,6 +13,7 @@ class MessageReceiver:
 
         self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.PAIR)
+        self.socket.linger = 0
         self.socket.bind(f'tcp://{listening_ip}:{listening_port}')
         threading.Thread(target=self.recv_msg_loop, daemon=True).start()
 
@@ -42,4 +43,3 @@ class MessageReceiver:
 
             # Parsing in a new thread?
             self.listener_action(msg['header']['type'], msg) 
-    
