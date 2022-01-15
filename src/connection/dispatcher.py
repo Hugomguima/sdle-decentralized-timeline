@@ -65,6 +65,7 @@ class MessageDispatcher:
     async def publish_one(self, user : dict, message : dict) -> None:
         self.set_port(user['listening_ip'], user['listening_port'])
         self.send_msg(message)
+        self.socket.close()
 
     async def publish_many(self, users, message) -> None:
         tasks = [self.publish_one(user, message) for user in users]
@@ -73,7 +74,8 @@ class MessageDispatcher:
     def set_port(self, dispatcher_ip : str, dispatcher_port : int) -> None:
         self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.PUSH)
-        self.socket.linger = 0
+        #self.socket.linger = 0
+        self.socket.setsockopt(zmq.LINGER, 0)
         self.socket.connect(f'tcp://{dispatcher_ip}:{dispatcher_port}')
 
     def send_msg(self, message) -> None:
